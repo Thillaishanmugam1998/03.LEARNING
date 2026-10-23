@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ta-Latn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Git Branch + Merge: conflict illa / conflict irukku</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#F2F5F7;--surf:#fff;--ink:#13222D;--mute:#566772;--line:#C9D4DB;--main:#0B7A85;--feat:#B0368C;--warn:#B42318;--ok:#1B7F3B;color-scheme:light;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1A21;--surf:#16252E;--ink:#E7EEF2;--mute:#9AABB6;--line:#2A3C47;--main:#58C8D3;--feat:#E27BC0;--warn:#FF8A7A;--ok:#6FD98E;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F1A21;--surf:#16252E;--ink:#E7EEF2;--mute:#9AABB6;--line:#2A3C47;--main:#58C8D3;--feat:#E27BC0;--warn:#FF8A7A;--ok:#6FD98E;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45}
+main{max-width:1000px;margin:0 auto;padding:18px 14px 36px}
+h1{font-size:clamp(24px,4.6vw,38px);line-height:1.1;margin:6px 0 6px;font-weight:800}
+.sub{color:var(--mute);margin:0 0 14px;max-width:62ch}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+button{font:inherit;font-weight:700;padding:9px 15px;border-radius:10px;border:2px solid var(--ink);background:var(--surf);color:var(--ink);cursor:pointer}
+button.go{background:var(--ink);color:var(--bg)}
+.tab[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--main);outline-offset:2px}
+.gw{overflow-x:auto;background:var(--surf);border:2px solid var(--line);border-radius:14px}
+#g{min-width:560px;display:block}
+.edge{fill:none;stroke-width:4;stroke-linecap:round}
+.edge.draw{stroke-dasharray:1;animation:dr .8s ease-out both}
+@keyframes dr{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+.pop{transform-box:fill-box;transform-origin:center;animation:pp .5s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes pp{from{transform:scale(0)}to{transform:scale(1)}}
+.nd text{fill:#fff;font:700 12px ui-monospace,Menlo,Consolas,monospace;text-anchor:middle}
+.lbl{transition:transform .7s ease,opacity .4s}
+.lbl rect{stroke-width:2}
+.lbl text{font:700 13px "Bricolage Grotesque",system-ui,sans-serif;text-anchor:middle}
+.log{margin:12px 0;background:var(--surf);border-left:5px solid var(--main);border-radius:6px;padding:12px 14px;min-height:70px}
+.log.err{border-left-color:var(--warn)}
+.log code,.cmd{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
+.fix{border:2px solid var(--warn);border-radius:12px;padding:12px;margin-bottom:12px;background:var(--surf)}
+.panes{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:10px;margin-bottom:14px}
+.pane{border:2px solid var(--line);border-radius:12px;background:var(--surf);overflow:hidden}
+.pane h3{margin:0;padding:8px 10px;font-size:14px;display:flex;gap:8px;align-items:center;border-bottom:2px solid var(--line)}
+.bd{font-size:11px;background:var(--ink);color:var(--bg);padding:1px 7px;border-radius:999px}
+.code{padding:8px 0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;overflow-x:auto}
+.ln{padding:1px 10px;white-space:pre;min-height:18px}
+.chg{background:rgba(232,163,23,.28)}
+.mine{background:color-mix(in srgb,var(--main) 24%,transparent)}
+.theirs{background:color-mix(in srgb,var(--feat) 24%,transparent)}
+.mk{font-weight:800;color:var(--warn)}
+.flash{animation:fl 1.3s}
+@keyframes fl{from{background:color-mix(in srgb,var(--ink) 20%,transparent)}to{background:transparent}}
+ol{padding-left:0;list-style:none;margin:0}
+ol li{padding:7px 10px;border:2px solid var(--line);border-radius:8px;margin-bottom:6px;background:var(--surf);color:var(--mute)}
+ol li.done{color:var(--ink);border-color:var(--ok)}
+ol li.cur{color:var(--ink);border-color:var(--ink)}
+.legend{font-size:12px;color:var(--mute);margin:6px 0 10px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<h1>Branch + Merge: conflict illa, conflict irukku</h1>
+<p class="sub">Main branch la oru change, feature branch la oru change. Rendaiyum merge pannumbothu enna nadakkum nu step by step paaru.</p>
+<div class="row" role="group" aria-label="Scenario">
+<button class="tab" data-s="ok" aria-pressed="true">Conflict illa</button>
+<button class="tab" data-s="bad" aria-pressed="false">Conflict irukku</button>
+</div>
+<div class="row">
+<button class="go" id="next">Next command</button>
+<button id="all">Run all</button>
+<button id="reset">Reset</button>
+</div>
+<div class="gw"><svg id="g" viewBox="0 0 640 215" width="100%" role="img" aria-label="Commit graph">
+<g id="edges"></g><g id="nodes"></g>
+<g class="lbl" id="lm"><rect x="-31" y="-13" width="62" height="26" rx="13" fill="var(--surf)" stroke="var(--main)"/><text dy="5" fill="var(--main)">main</text></g>
+<g class="lbl" id="lf" style="opacity:0"><rect x="-38" y="-13" width="76" height="26" rx="13" fill="var(--surf)" stroke="var(--feat)"/><text dy="5" fill="var(--feat)">feature</text></g>
+<g class="lbl" id="hd"><rect x="-27" y="-12" width="54" height="24" rx="6" fill="var(--ink)"/><text dy="5" fill="var(--bg)">HEAD</text></g>
+</svg></div>
+<div class="legend">Teal = main branch, Magenta = feature branch. HEAD = ippo neenga irukkura branch.</div>
+<div class="log" id="log" aria-live="polite"></div>
+<div id="fix"></div>
+<div class="panes" id="panes"></div>
+<ol id="steps"></ol>
+</main>
+<script>
+var BASE=["class Account","{","    const decimal MinBalance = 500;","    public decimal Balance;","    public void Deposit(decimal a) { Balance += a; }","}"];
+var WD="    public void Withdraw(decimal a) { Balance -= a; }",M1000="    const decimal MinBalance = 1000;",M250="    const decimal MinBalance = 250;",M750="    const decimal MinBalance = 750;";
+function rep(a,i,v){var b=a.slice();b[i]=v;return b}
+function ins(a,i,v){var b=a.slice();b.splice(i,0,v);return b}
+var SC={ok:{fm:"Add Withdraw method",fl:ins(BASE,5,WD),mm:"Raise minimum balance",ml:rep(BASE,2,M1000)},bad:{fm:"Lower minimum balance",fl:rep(BASE,2,M250),mm:"Raise minimum balance",ml:rep(BASE,2,M1000)}};
+var X={c1:60,c2:190,c3:330,c4:330,c5:500},LY={main:75,feat:150};
+var sc="ok",S,ST,busy=false,reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+function sleep(ms){return new Promise(function(r){setTimeout(r,reduce?0:ms)})}
+function $(i){return document.getElementById(i)}
+function say(t,e){var l=$("log");l.className="log"+(e?" err":"");l.innerHTML=t}
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function by(id){return S.commits.filter(function(c){return c.id===id})[0]}
+function pos(c){return[X[c.id],LY[c.lane]]}
+function add(id,m,lane,par){S.commits.push({id:id,msg:m,lane:lane,parents:par});S.nw=id}
+function init(k){sc=k;S={commits:[{id:"c1",msg:"Initial commit",lane:"main",parents:[]},{id:"c2",msg:"Add Account.cs",lane:"main",parents:["c1"]}],main:"c2",feat:null,head:"main",f:{main:BASE.slice(),feat:null},merge:null,nw:null,fl:[],i:0};busy=false;
+document.querySelectorAll(".tab").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.s===k)});
+build();say("Start: main la rendu commit irukku. Account.cs file la <code>MinBalance = 500</code>. Next command click pannu.");render()}
+function build(){var c=SC[sc];ST=[
+{cmd:"git switch -c feature",run:function(){S.feat="c2";S.head="feat";S.f.feat=BASE.slice();S.fl=["feat"];say("<strong>git switch -c feature:</strong> pudhu branch create aachu. Idhu oru pudhu label (pointer) mattum, code copy aagala. HEAD ippo feature la irukku.")}},
+{cmd:'git commit -am "'+c.fm+'"',run:function(){add("c3",c.fm,"feat",["c2"]);S.feat="c3";S.f.feat=c.fl;S.fl=["feat"];say("<strong>Feature la commit:</strong> Account.cs la <code>"+c.fm+"</code> change panni commit pannom. Idhu feature lane la mattum, main ku innum theriyaadhu.")}},
+{cmd:"git switch main",run:function(){S.head="main";S.fl=["main"];say("<strong>git switch main:</strong> HEAD main ku maariduchu. Working folder la ippo main oda code dhaan theriyum, feature oda change illa.")}},
+{cmd:'git commit -am "'+c.mm+'"',run:function(){add("c4",c.mm,"main",["c2"]);S.main="c4";S.f.main=c.ml;S.fl=["main"];say("<strong>Main la commit:</strong> main um thaniya <code>"+c.mm+"</code> change pannidhu. Ippo rendu branch um vera vera direction la poiduchu (diverged).")}}];
+if(sc==="ok")ST.push({cmd:"git merge feature",run:function(){add("c5","Merge branch feature","main",["c4","c3"]);S.main="c5";S.f.main=ins(c.ml,5,WD);S.fl=["main"];say("<strong>git merge feature: auto-merge!</strong> Rendu branch um vera vera idam la maathirukku (main: MinBalance line, feature: Withdraw method). So Git rendaiyum serthu, rendu parent oda oru merge commit create pannidhu. Main code la rendu change um irukku (orange).")}});
+else{ST.push({cmd:"git merge feature",run:function(){S.merge={lines:[].concat(c.ml.slice(0,2),["<<<<<<< HEAD (main)",c.ml[2],"=======",c.fl[2],">>>>>>> feature"],c.ml.slice(3)),conflict:true,staged:false};S.fl=["merge"];say("<strong>CONFLICT!</strong> Rendu branch um MinBalance line ah vera vera value ku maathirukku. Edhu sari nu Git ku theriyaadhu, so merge ah nirutthi file la markers potruchu. Keela irukkura buttons la oru decision edu.",1)}});
+ST.push({cmd:"git add Account.cs",run:function(){S.merge.staged=true;S.fl=["merge"];say("<strong>git add Account.cs:</strong> resolve panna file ah staging ku anuppinom. Idhu Git ku <em>conflict mudinjuchu</em> nu solradhu.")}});
+ST.push({cmd:"git commit",run:function(){add("c5","Merge branch feature","main",["c4","c3"]);S.main="c5";S.f.main=S.merge.lines;S.merge=null;S.fl=["main"];say("<strong>git commit:</strong> merge commit create aachu, rendu parent oda. Ippo main la rendu branch oda work um irukku.")}})}}
+function gdraw(){var e="",n="";
+S.commits.forEach(function(c){var p=pos(c);c.parents.forEach(function(pid){var q=by(pid),qp=pos(q),col=(c.lane==="feat"||q.lane==="feat")?"feat":"main";
+var d=qp[1]===p[1]?"M"+qp[0]+","+qp[1]+" L"+p[0]+","+p[1]:"M"+qp[0]+","+qp[1]+" C"+(qp[0]+60)+","+qp[1]+" "+(p[0]-60)+","+p[1]+" "+p[0]+","+p[1];
+e+='<path d="'+d+'" class="edge'+(c.id===S.nw?" draw":"")+'" pathLength="1" stroke="var(--'+col+')"/>'});
+n+='<g class="nd'+(c.id===S.nw?" pop":"")+'"><title>'+esc(c.msg)+'</title><circle cx="'+p[0]+'" cy="'+p[1]+'" r="17" fill="var(--'+c.lane+')"'+(c.parents.length>1?' stroke="var(--ink)" stroke-width="3"':"")+'/><text x="'+p[0]+'" y="'+(p[1]+4)+'">'+c.id+"</text></g>"});
+$("edges").innerHTML=e;$("nodes").innerHTML=n;
+var mp=pos(by(S.main));T("lm",mp[0],mp[1]-40,1);
+var fx=0,fy=0;if(S.feat){var fp=pos(by(S.feat));fx=fp[0];fy=fp[1]+40;T("lf",fx,fy,1)}else{var c2=pos(by("c2"));T("lf",c2[0],c2[1]+40,0)}
+if(S.head==="main")T("hd",mp[0]+70,mp[1]-40,1);else T("hd",fx+78,fy,1)}
+function T(id,x,y,o){var el=$(id);el.style.transform="translate("+x+"px,"+y+"px)";el.style.opacity=o}
+function code(lines){var st=0;return lines.map(function(l){var c="";if(/^<<<<<<</.test(l)){c="mk";st=1}else if(/^=======/.test(l)){c="mk";st=2}else if(/^>>>>>>>/.test(l)){c="mk";st=0}else if(st===1)c="mine";else if(st===2)c="theirs";else if(BASE.indexOf(l)<0)c="chg";return'<div class="ln '+c+'">'+esc(l)+"</div>"}).join("")}
+function pane(k,title,badge,lines){return'<div class="pane'+(S.fl.indexOf(k)>-1?" flash":"")+'"><h3>'+title+(badge?'<span class="bd">'+badge+"</span>":"")+'</h3><div class="code">'+code(lines)+"</div></div>"}
+function render(){gdraw();
+var h="";h+=pane("main","Account.cs on main",S.head==="main"?"HEAD":"",S.f.main);
+if(S.feat)h+=pane("feat","Account.cs on feature",S.head==="feat"?"HEAD":"",S.f.feat);
+if(S.merge)h+=pane("merge","Merge in progress",S.merge.conflict?"conflict":S.merge.staged?"staged":"resolved",S.merge.lines);
+$("panes").innerHTML=h;
+$("fix").innerHTML=S.merge&&S.merge.conflict?'<div class="fix"><strong>Conflict resolve pannu.</strong> Real life la neenga file ah open panni markers (<code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code>=======</code>, <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>) delete panni final line ah ezhudhuveenga. Inga edhu venum?<div class="row" style="margin:10px 0 0"><button data-r="1000">Main version (1000)</button><button data-r="250">Feature version (250)</button><button data-r="750">Rendum mix: 750</button></div></div>':"";
+$("steps").innerHTML=ST.map(function(s,i){return'<li class="'+(i<S.i?"done":i===S.i?"cur":"")+'"><span class="cmd">'+(i<S.i?"✓ ":"")+esc(s.cmd)+"</span></li>"}).join("");
+var fin=S.i>=ST.length;$("next").disabled=busy||fin;$("all").disabled=busy||fin||!!(S.merge&&S.merge.conflict)}
+async function next(){if(busy||S.i>=ST.length)return;
+if(S.merge&&S.merge.conflict){say("<strong>Munnadi conflict ah resolve pannu.</strong> Keela irukkura oru button click pannu, apparam git add.",1);return}
+busy=true;S.nw=null;ST[S.i++].run();render();await sleep(1000);busy=false;S.nw=null;S.fl=[];render()}
+async function all(){while(S.i<ST.length&&!(S.merge&&S.merge.conflict)){await next()}}
+$("next").onclick=next;$("all").onclick=all;$("reset").onclick=function(){init(sc)};
+document.querySelectorAll(".tab").forEach(function(b){b.onclick=function(){if(!busy)init(b.dataset.s)}});
+$("fix").onclick=function(e){var b=e.target.closest("button");if(!b)return;var v={1000:M1000,250:M250,750:M750}[b.dataset.r];
+S.merge.lines=rep(SC.bad.ml,2,v);S.merge.conflict=false;S.fl=["merge"];say("<strong>Conflict resolve aachu.</strong> Markers ellam remove panni MinBalance line ah neenga final panneenga. Ippo <code>git add</code>, apparam <code>git commit</code>.");render();setTimeout(function(){S.fl=[]},50)};
+init("ok");
+</script>
+</body>
+</html>
