@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ta-Latn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Git Commands Lab: oru oru command um enna pannum</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#F2F5F7;--surf:#fff;--ink:#13222D;--mute:#566772;--line:#C9D4DB;--wd:#B85A08;--stg:#7A3FD0;--loc:#0B7A85;--rem:#4A3FD0;--warn:#B42318;--ok:#1B7F3B;--term:#0E1A22;--termfg:#CFE8D8;color-scheme:light;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1A21;--surf:#16252E;--ink:#E7EEF2;--mute:#9AABB6;--line:#2A3C47;--wd:#F2A65C;--stg:#B994F5;--loc:#58C8D3;--rem:#A9A0FF;--warn:#FF8A7A;--ok:#6FD98E;--term:#08121A;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F1A21;--surf:#16252E;--ink:#E7EEF2;--mute:#9AABB6;--line:#2A3C47;--wd:#F2A65C;--stg:#B994F5;--loc:#58C8D3;--rem:#A9A0FF;--warn:#FF8A7A;--ok:#6FD98E;--term:#08121A;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45}
+main{max-width:1180px;margin:0 auto;padding:18px 14px 36px}
+h1{font-size:clamp(24px,4.4vw,36px);line-height:1.1;margin:6px 0 6px;font-weight:800}
+.sub{color:var(--mute);margin:0 0 14px;max-width:70ch}
+.wrap{display:grid;grid-template-columns:310px 1fr;gap:16px;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}}
+.cmds{border:2px solid var(--line);border-radius:14px;background:var(--surf);padding:10px;max-height:calc(100vh - 24px);overflow:auto;position:sticky;top:8px}
+@media (max-width:900px){.cmds{position:static;max-height:none;order:2}}
+.cmds h2{font-size:13px;margin:10px 4px 6px;color:var(--mute)}
+.cmds h2:first-child{margin-top:2px}
+.cmd{display:block;width:100%;text-align:left;font:inherit;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:9px;padding:7px 9px;margin-bottom:6px;cursor:pointer}
+.cmd b{display:block;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;word-break:break-all}
+.cmd small{color:var(--mute);font-size:11.5px}
+.cmd:hover{border-color:var(--ink)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible{outline:3px solid var(--loc);outline-offset:2px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.tools button{font:inherit;font-weight:700;padding:8px 13px;border-radius:9px;border:2px solid var(--ink);background:var(--surf);color:var(--ink);cursor:pointer}
+.tools label{font-size:13px;color:var(--mute);display:flex;gap:6px;align-items:center}
+.tools input{font:inherit;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;padding:7px 9px;border-radius:8px;border:2px solid var(--line);background:var(--surf);color:var(--ink);width:170px}
+#stage{position:relative;display:grid;grid-template-columns:1fr 30px 1fr 30px 1fr 30px 1fr;gap:4px;align-items:stretch}
+@media (max-width:1100px) and (min-width:901px),(max-width:640px){#stage{grid-template-columns:1fr}.arr{flex-direction:row!important;padding:2px 0}.arr span{transform:rotate(90deg)}}
+.zone{border:2px solid var(--zc);border-radius:12px;background:var(--surf);padding:8px;min-height:190px;transition:opacity .3s}
+.zone.off{opacity:.4}
+.zone h3{margin:0;font-size:14px;color:var(--zc)}
+.zone p{margin:0 0 8px;font-size:11.5px;color:var(--mute)}
+.arr{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--mute);text-align:center;font-family:ui-monospace,Menlo,Consolas,monospace}
+.arr span{font-size:20px;line-height:1}
+.arr.pulse{color:var(--ink);animation:pl 1.1s}
+@keyframes pl{0%,100%{transform:scale(1)}40%{transform:scale(1.35)}}
+.chip{display:flex;gap:6px;align-items:center;justify-content:space-between;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;font-weight:700;padding:5px 8px;border-radius:8px;border:2px solid var(--line);margin-bottom:5px;overflow:hidden}
+.chip i{font-style:normal;font-size:10px;font-weight:600}
+.chip.new{border-color:var(--warn)}.chip.new i{color:var(--warn)}
+.chip.mod{border-color:var(--wd)}.chip.mod i{color:var(--wd)}
+.chip.clean{border-color:var(--ok)}.chip.clean i{color:var(--ok)}
+.chip.ghost{opacity:.45}
+.chip.stg{border-color:var(--stg);color:var(--stg)}
+.chip.del{text-decoration:line-through;border-color:var(--warn);color:var(--warn)}
+.chip.c{border-color:var(--loc);color:var(--loc)}
+.chip.c.mate{border-color:var(--wd);color:var(--wd)}
+.chip.r{border-color:var(--rem);color:var(--rem)}
+.chip.r.mate{border-color:var(--wd);color:var(--wd)}
+.chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{display:inline-block;font-size:11px;font-weight:700;border:1.5px solid var(--line);border-radius:999px;padding:1px 8px;margin:0 4px 5px 0}
+.pill.cur{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.empty{font-size:12px;color:var(--mute);font-style:italic}
+.pkt{position:absolute;left:0;top:0;z-index:6;pointer-events:none;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;border:2px solid;background:var(--surf);white-space:nowrap}
+.pn{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+@media (max-width:700px){.pn{grid-template-columns:1fr}}
+.term{background:var(--term);color:var(--termfg);border-radius:12px;padding:10px 12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;height:230px;overflow:auto}
+.term div{white-space:pre-wrap;word-break:break-word}
+.term .p{color:#fff;font-weight:700;margin-top:6px}
+.term .k{color:#7E9AAB}
+.term .e{color:#FF8A7A}
+.exp{background:var(--surf);border-left:5px solid var(--loc);border-radius:8px;padding:12px 14px;min-height:230px;overflow:auto;max-height:230px}
+.exp.err{border-left-color:var(--warn)}
+.mv{display:inline-block;font-size:12px;font-weight:700;background:var(--ink);color:var(--bg);border-radius:999px;padding:2px 10px;margin-bottom:8px}
+.exp h4{margin:0 0 6px;font-size:14px;color:var(--mute)}
+.exp code{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<h1>Git Commands Lab</h1>
+<p class="sub">Cheat sheet la irukkura ovvoru command um click pannu. Appo Working Directory, Staging Area, Local Repository, GitHub nu 4 idathula enna aagudhu nu animation la paaru.</p>
+<div class="wrap">
+<aside class="cmds" id="cmds" aria-label="Git commands"></aside>
+<section>
+<div class="tools">
+<button id="nf">+ Pudhu file</button>
+<button id="ef">Edit a file</button>
+<label>Commit message <input id="msg" value="Initial commit" maxlength="40"></label>
+<button id="tm">Teammate GitHub ku push pannuraar</button>
+<button id="rs">Reset</button>
+</div>
+<div id="stage">
+<div class="zone" id="z0" style="--zc:var(--wd)"><h3>Working Directory</h3><p>my-project folder: neenga edit panra files</p><div id="b0"></div></div>
+<div class="arr" id="a0"><span>→</span>add<br>↩ restore</div>
+<div class="zone" id="z1" style="--zc:var(--stg)"><h3>Staging Area</h3><p>Commit ku ready ana changes</p><div id="b1"></div></div>
+<div class="arr" id="a1"><span>→</span>commit</div>
+<div class="zone" id="z2" style="--zc:var(--loc)"><h3>Local Repository</h3><p>.git folder la commits + branches</p><div id="b2"></div></div>
+<div class="arr" id="a2"><span>⇄</span>push<br>pull</div>
+<div class="zone" id="z3" style="--zc:var(--rem)"><h3>GitHub</h3><p>Remote Repository (origin)</p><div id="b3"></div></div>
+</div>
+<div class="pn">
+<div class="term" id="term" aria-label="Terminal"></div>
+<div class="exp" id="exp" aria-live="polite"></div>
+</div>
+</section>
+</div>
+</main>
+<script>
+var $=function(i){return document.getElementById(i)};
+var esc=function(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")};
+var URL_="https://github.com/USERNAME/my-project.git",FEAT="feature-login",S,busy=false;
+var reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+var sleep=function(ms){return new Promise(function(r){setTimeout(r,reduce?0:ms)})};
+var IDS=["a1f3c2e","b7d90a4","c3e8f15","d4a62b9","e9c01d7","f2b7a83","a8d4e60","b5c19f2","c0e7d38","d9a3b61"];
+var CM=[
+["1. Repository","init","git init","Local Git repository initialize pannum"],
+["1. Repository","status","git status","Working directory la enna changes irukku nu kaattum"],
+["2. Staging Area","add1","git add index.html","index.html file ah staging area la add pannum"],
+["2. Staging Area","addall","git add .","Ella files ah um staging ku add pannum"],
+["2. Staging Area","unstage","git restore --staged index.html","Staging la irundhu file ah remove pannum (file delete aagadhu)"],
+["2. Staging Area","rm","git rm index.html","File ah Git tracking la irundhu remove pannum (file um delete aagum)"],
+["3. Commit","commit","git commit -m \"message\"","Staged changes ah commit pannum"],
+["3. Commit","log","git log --oneline","Commit history short ah kaattum"],
+["4. Branches","br","git branch","Local branches ellam list pannum"],
+["4. Branches","brnew","git branch feature-login","feature-login nu pudhu branch create pannum"],
+["4. Branches","swfeat","git switch feature-login","feature-login branch ku switch aagum"],
+["4. Branches","swc","git switch -c feature-home","Pudhu branch create panni switch aagum"],
+["4. Branches","show","git branch --show-current","Current branch name mattum kaattum"],
+["5. Merge and Delete","swmain","git switch main","Main branch ku thirumba pogum"],
+["5. Merge and Delete","merge","git merge feature-login","feature-login changes ah current branch la merge pannum"],
+["5. Merge and Delete","brd","git branch -d feature-login","Merge aana apparam branch delete pannum"],
+["6. Connect to GitHub","rv","git remote -v","Remote already connect aagirukka nu check pannum"],
+["6. Connect to GitHub","radd","git remote add origin <repo-url>","Local repo ku GitHub remote add pannum"],
+["6. Connect to GitHub","bM","git branch -M main","Current branch name ah main nu maathum"],
+["6. Connect to GitHub","pushu","git push -u origin main","Local main ah GitHub ku push pannum (-u upstream set pannum)"],
+["7. Pull and Push","pull","git pull origin main","GitHub changes ah local ku kondu varum"],
+["7. Pull and Push","push","git push origin main","Local main changes ah GitHub ku anuppum"]];
+function fil(n){return S.files.filter(function(f){return f.n===n})[0]}
+function nid(){var i=IDS[S.n%IDS.length];S.n++;return S.n>IDS.length?i.slice(0,6)+S.n:i}
+function init(){S={git:false,cur:null,files:[{n:"index.html",t:0,wd:"new",st:0},{n:"style.css",t:0,wd:"new",st:0}],br:{},cm:{},remote:{url:null,main:[]},n:0};
+$("term").innerHTML="";$("exp").className="exp";$("exp").innerHTML="<h4>Enna aagudhu?</h4>Left la irundhu oru command click pannu. Munnadi <code>git init</code> dhaan start. Working Directory la rendu pudhu file (untracked) irukku paaru.";render()}
+function mergeInto(src,what){var dst=S.br[S.cur],miss=src.filter(function(i){return dst.indexOf(i)<0});
+if(!miss.length)return{o:["Already up to date."],s:"Merge panna pudhu commit illa. Rendu side um same."};
+if(dst.every(function(i){return src.indexOf(i)>-1})){S.br[S.cur]=src.slice();return{o:["Fast-forward"," "+miss.length+" commit(s) added"],s:what+" la irundhu "+miss.length+" commit "+S.cur+" ku vandhuchu. Unga branch la veraa commit illa, so Git pointer ah mela nagarthidhu (fast-forward). Pudhu merge commit create aagala.",mv:what+" ➜ "+S.cur,ar:-1,p:[2]}}
+var id=nid();S.cm[id]={msg:"Merge "+what,by:"me"};S.br[S.cur]=dst.concat(miss,[id]);return{o:["Merge made by the 'ort' strategy."],s:what+" oda commits ah "+S.cur+" oda serthu oru merge commit ("+id.slice(0,7)+") create aachu.",mv:what+" ➜ "+S.cur,p:[2]}}
+function push(u){if(!S.remote.url)return{o:["fatal: 'origin' does not appear to be a git repository"],s:"Munnadi <code>git remote add origin &lt;repo-url&gt;</code> pannanum. Git ku GitHub address theriyaadhu.",e:1};
+if(!S.br.main)return{o:["error: src refspec main does not match any","error: failed to push some refs to 'origin'"],s:"Local la main branch illa (ippo branch: "+S.cur+"). Munnadi <code>git branch -M main</code> pannu.",e:1};
+var loc=S.br.main,rem=S.remote.main;
+if(rem.some(function(i){return loc.indexOf(i)<0}))return{o:["! [rejected]        main -> main (fetch first)","error: Updates were rejected because the remote contains work that you do not have locally."],s:"GitHub la unga laptop la illaadha teammate commit irukku, so Git push ah reject pannidhu. Munnadi <code>git pull origin main</code> pannu.",e:1,f:["z2","z3","push rejected","var(--warn)",1],ar:2};
+var nw=loc.filter(function(i){return rem.indexOf(i)<0});if(!nw.length)return{o:["Everything up-to-date"],s:"Push panna pudhu commit illa. Local um GitHub um same."};
+S.remote.main=loc.slice();var o=["To "+S.remote.url,"   "+nw[0].slice(0,7)+"..main  main -> main"];if(u)o.push("branch 'main' set up to track 'origin/main'.");
+return{o:o,s:nw.length+" commit Local Repository la irundhu GitHub ku pochu. Ippo teammates pull panni paakkalaam."+(u?" -u ah use panradhunaala adutha dhadava <code>git push</code> nu mattum sonnaalum pothum.":""),mv:"Local Repository ➜ GitHub",ar:2,f:["z2","z3",nw.map(function(i){return i.slice(0,7)}).join(","),"var(--loc)"]}}
+var H={
+init:function(){if(S.git)return{o:["Reinitialized existing Git repository in my-project/.git/"],s:"Repo already irukku, so onnum maaralai."};S.git=true;S.cur="master";S.br.master=[];return{o:["Initialized empty Git repository in my-project/.git/"],s:"my-project kulla oru hidden <code>.git</code> folder create aachu. Idhu dhaan Local Repository. Ippo Staging Area um Local Repo um active aagiduchu. Files innum untracked (Git kavanikkala).",mv:"my-project ➜ .git (Local Repository)",p:[1,2]}},
+status:function(){var o=["On branch "+S.cur],st=S.files.filter(function(f){return f.st}),un=S.files.filter(function(f){return!f.st&&!f.gone&&f.wd==="mod"}),nw=S.files.filter(function(f){return!f.st&&!f.gone&&f.wd==="new"});
+if(st.length){o.push("Changes to be committed:");st.forEach(function(f){o.push("    "+(f.st==="del"?"deleted:    ":f.t?"modified:   ":"new file:   ")+f.n)})}
+if(un.length){o.push("Changes not staged for commit:");un.forEach(function(f){o.push("    modified:   "+f.n)})}
+if(nw.length){o.push("Untracked files:");nw.forEach(function(f){o.push("    "+f.n)})}
+if(!st.length&&!un.length&&!nw.length)o.push("nothing to commit, working tree clean");
+return{o:o,s:"Git Working Directory ah um Staging Area ah um Last commit oda compare panni report tharum. Edhuvum move aagala, read-only command."}},
+add1:function(){var f=fil("index.html");if(!f||f.gone)return{o:["fatal: pathspec 'index.html' did not match any files"],s:"index.html file Working Directory la illa.",e:1};
+if(f.st==="add"||f.wd==="clean")return{o:[],s:"index.html la pudhu change illa (illana already staged). <b>Edit a file</b> click panni change pannu.",e:1};
+f.st="add";return{o:[],s:"<code>index.html</code> oda current copy Staging Area ku pochu. Adhu dhaan adutha commit la serum. Style.css ah innum sollala, so adhu varala.",mv:"Working Directory ➜ Staging Area",ar:0,f:["z0","z1","index.html","var(--stg)"]}},
+addall:function(){var e=S.files.filter(function(f){return!f.gone&&!f.st&&(f.wd==="new"||f.wd==="mod")});if(!e.length)return{o:[],s:"Add panna changes illa. Pudhu file or Edit a file click pannu.",e:1};
+e.forEach(function(f){f.st="add"});return{o:[],s:"<code>.</code> na intha folder la irukkura <b>ella</b> changes. "+e.length+" file(s) Staging Area ku pochu.",mv:"Working Directory ➜ Staging Area",ar:0,f:["z0","z1",e.length+" files","var(--stg)"]}},
+unstage:function(){var f=fil("index.html");if(!f||f.st!=="add")return{o:["error: nothing to unstage"],s:"index.html staging la illa, so remove panna onnum illa.",e:1};
+f.st=0;return{o:[],s:"index.html Staging Area la irundhu veliya vandhuduchu. <b>File delete aagala</b>, Working Directory la appadiye irukku. Neenga panna changes um safe.",mv:"Staging Area ➜ Working Directory",ar:0,f:["z1","z0","index.html","var(--wd)"]}},
+rm:function(){var f=fil("index.html");if(!f||f.gone||!f.t)return{o:["fatal: pathspec 'index.html' did not match any files"],s:"<code>git rm</code> Git track panra file ku mattum velai seiyum. index.html innum commit aagala (illana already removed).",e:1};
+f.gone=true;f.st="del";return{o:["rm 'index.html'"],s:"index.html Working Directory la irundhu <b>delete</b> aachu, matrum deletion Staging la poiduchu. Commit pannaa repo la irundhum remove aagum.",mv:"Working Directory ✕ ➜ Staging Area",ar:0,f:["z0","z1","index.html ✕","var(--warn)"]}},
+commit:function(){var m=($("msg").value||"").trim()||"Update project",st=S.files.filter(function(f){return f.st});
+if(!st.length)return{o:["nothing to commit, working tree clean"],s:"Staging Area empty, commit panna onnum illa. Munnadi <code>git add</code>.",e:1};
+var id=nid();S.cm[id]={msg:m,by:"me"};S.br[S.cur].push(id);st.forEach(function(f){if(f.st==="del")S.files.splice(S.files.indexOf(f),1);else{f.t=1;f.wd="clean";f.st=0}});
+return{o:["["+S.cur+" "+id.slice(0,7)+"] "+m," "+st.length+" file(s) changed"],s:"Staging Area la irundha "+st.length+" file(s) oru <b>snapshot</b> ah Local Repository la save aachu (id: <code>"+id.slice(0,7)+"</code>). Staging ippo empty. Files ippo green (unchanged).",mv:"Staging Area ➜ Local Repository",ar:1,f:["z1","z2",id.slice(0,7),"var(--loc)"]}},
+log:function(){var l=S.br[S.cur];if(!l.length)return{o:["fatal: your current branch '"+S.cur+"' does not have any commits yet"],s:"Innum oru commit kooda illa.",e:1};
+return{o:l.slice().reverse().map(function(i,k){return i.slice(0,7)+(k?"":" (HEAD -> "+S.cur+")")+" "+S.cm[i].msg}),s:"Current branch oda commits ah, pudhusu mela. Read-only command."}},
+br:function(){return{o:Object.keys(S.br).map(function(b){return(b===S.cur?"* ":"  ")+b}),s:"Local la irukkura branches. <code>*</code> irukkura branch dhaan current (HEAD)."}},
+brnew:function(){return mk(FEAT,false)},
+swfeat:function(){if(!S.br[FEAT])return{o:["fatal: invalid reference: "+FEAT],s:"Andha branch illa. Munnadi <code>git branch feature-login</code>.",e:1};S.cur=FEAT;return{o:["Switched to branch '"+FEAT+"'"],s:"HEAD ippo <b>"+FEAT+"</b> ku maariduchu. Inime panra commits indha branch la mattum serum.",mv:"HEAD ➜ "+FEAT,p:[2]}},
+swc:function(){return mk("feature-home",true)},
+show:function(){return{o:[S.cur],s:"Current branch name mattum."}},
+swmain:function(){if(!S.br.main)return{o:["fatal: invalid reference: main"],s:"Ippo branch name <b>"+S.cur+"</b> (git init default). <code>git branch -M main</code> pannina dhaan main varum.",e:1};S.cur="main";return{o:["Switched to branch 'main'"],s:"HEAD main ku thirumbiduchu.",mv:"HEAD ➜ main",p:[2]}},
+merge:function(){if(!S.br[FEAT])return{o:["merge: "+FEAT+" - not something we can merge"],s:"feature-login branch illa.",e:1};if(S.cur===FEAT)return{o:["Already up to date."],s:"Nee already feature-login la irukka. Munnadi <code>git switch main</code>.",e:1};return mergeInto(S.br[FEAT],FEAT)},
+brd:function(){var b=S.br[FEAT];if(!b)return{o:["error: branch '"+FEAT+"' not found."],s:"Andha branch illa.",e:1};if(S.cur===FEAT)return{o:["error: cannot delete branch '"+FEAT+"' used by current branch"],s:"Current branch ah delete panna mudiyaadhu. Vera branch ku switch pannu.",e:1};
+if(b.some(function(i){return S.br[S.cur].indexOf(i)<0}))return{o:["error: the branch '"+FEAT+"' is not fully merged."],s:"Intha branch la merge aagaadha commits irukku. Munnadi merge pannu.",e:1};delete S.br[FEAT];return{o:["Deleted branch "+FEAT],s:"Branch label mattum delete aachu. Commits ellam "+S.cur+" la safe ah irukku.",p:[2]}},
+rv:function(){if(!S.remote.url)return{o:[],s:"Output kaaliya irukku, adhunaala remote innum connect aagala. <code>git remote add origin ...</code> pannu."};return{o:["origin  "+S.remote.url+" (fetch)","origin  "+S.remote.url+" (push)"],s:"origin nra peru GitHub URL ku point aagudhu."}},
+radd:function(){if(S.remote.url)return{o:["error: remote origin already exists."],s:"origin already add aagiduchu.",e:1};S.remote.url=URL_;return{o:[],s:"Local repo ku GitHub address (<b>origin</b>) solliyaachu. Innum code <b>anuppala</b>, link mattum save aachu. Adutha step: branch name main aakki push.",mv:"Local Repository 🔗 GitHub",p:[3]}},
+bM:function(){if(S.cur==="main")return{o:[],s:"Already main. Onnum maaralai."};if(S.br.main)return{o:["fatal: a branch named 'main' already exists"],s:"main already irukku.",e:1};S.br.main=S.br[S.cur];delete S.br[S.cur];S.cur="main";return{o:[],s:"Branch name <b>master</b> ah <b>main</b> nu maathiyaachu. GitHub default um main dhaan, adhunaala idhu venum.",p:[2]}},
+pushu:function(){return push(true)},push:function(){return push(false)},
+pull:function(){if(!S.remote.url)return{o:["fatal: 'origin' does not appear to be a git repository"],s:"Remote connect aagala.",e:1};
+var r=mergeInto(S.remote.main,"origin/main");if(r.mv){r.mv="GitHub ➜ Local Repository";r.ar=2;r.f=["z3","z2","origin/main","var(--rem)"];r.s=r.s.replace("origin/main la irundhu","GitHub la irundhu")}return r}};
+function mk(n,sw){if(S.br[n])return{o:["fatal: a branch named '"+n+"' already exists"],s:"Andha peru la branch already irukku.",e:1};if(!S.br[S.cur].length)return{o:["fatal: not a valid object name: '"+S.cur+"'"],s:"Munnadi oru commit pannanum, apparam dhaan branch create panna mudiyum.",e:1};
+S.br[n]=S.br[S.cur].slice();if(sw)S.cur=n;return{o:sw?["Switched to a new branch '"+n+"'"]:[],s:"Pudhu branch <b>"+n+"</b> create aachu. Idhu oru pointer mattum, code copy aagala. Ippo rendu branch um same commits ah point pannum."+(sw?" Neenga ippo adhula switch aagiteenga.":" Switch aagala, innum <b>"+S.cur+"</b> la dhaan irukkeenga."),mv:S.cur+" ➜ "+n,p:[2]}}
+function line(t,c){var d=document.createElement("div");d.className=c||"";d.textContent=t;$("term").appendChild(d);$("term").scrollTop=1e9}
+async function fly(a,b,label,col,bounce){var st=$("stage"),s=st.getBoundingClientRect(),ra=$(a).getBoundingClientRect(),rb=$(b).getBoundingClientRect();
+var p=document.createElement("div");p.className="pkt";p.textContent=label;p.style.borderColor=col;p.style.color=col;st.appendChild(p);
+var ax=ra.left-s.left+ra.width/2,ay=ra.top-s.top+ra.height/2,bx=rb.left-s.left+rb.width/2,by=rb.top-s.top+rb.height/2;
+function t(x,y){return"translate("+x+"px,"+y+"px) translate(-50%,-50%)"}
+var k=bounce?[{transform:t(ax,ay)},{transform:t(ax+(bx-ax)*.6,ay+(by-ay)*.6),offset:.55},{transform:t(ax,ay)}]:[{transform:t(ax,ay)},{transform:t(bx,by)}];
+await p.animate(k,{duration:reduce?1:bounce?1300:950,easing:"ease-in-out"}).finished;p.remove()}
+function explain(r){var x=$("exp");x.className="exp"+(r.e?" err":"");x.innerHTML="<h4>Enna aagudhu?</h4>"+(r.mv?'<div class="mv">'+esc(r.mv)+"</div><br>":"")+"<div>"+r.s+"</div>"}
+function pulse(r){var z=(r.p||[]).map(function(n){return"z"+n});if(r.ar>-1&&r.ar!=null)z.push("a"+r.ar);z.forEach(function(id){var e=$(id);e.classList.remove("pulse");void e.offsetWidth;e.classList.add("pulse")})}
+async function run(id){if(busy)return;busy=true;lock();var c=CM.filter(function(x){return x[1]===id})[0],cmd=c[2];if(id==="commit")cmd='git commit -m "'+(($("msg").value||"").trim()||"Update project")+'"';
+line("$ "+cmd,"p");line("# "+c[3],"k");var r;if(!S.git&&id!=="init")r={o:["fatal: not a git repository (or any of the parent directories): .git"],s:"Git repository innum illa. Munnadi <code>git init</code> pannanum.",e:1};else r=H[id]();
+r.o.forEach(function(l){line(l,/^(fatal|error|!)/.test(l)?"e":"")});if(r.f)await fly.apply(null,r.f);render();explain(r);pulse(r);busy=false;lock()}
+function lock(){document.querySelectorAll("button").forEach(function(b){b.disabled=busy})}
+function render(){$("z1").classList.toggle("off",!S.git);$("z2").classList.toggle("off",!S.git);
+$("b0").innerHTML=S.files.filter(function(f){return!f.gone}).map(function(f){return'<div class="chip '+(f.st==="add"?"ghost ":"")+f.wd+'"><span>'+esc(f.n)+"</span><i>"+(f.st==="add"?"staged":f.wd==="new"?"untracked":f.wd==="mod"?"modified":"unchanged")+"</i></div>"}).join("")||'<div class="empty">Folder empty</div>';
+$("b1").innerHTML=!S.git?'<div class="empty">git init pannala</div>':S.files.filter(function(f){return f.st}).map(function(f){return'<div class="chip '+(f.st==="del"?"del":"stg")+'"><span>'+esc(f.n)+"</span><i>"+(f.st==="del"?"deleted":f.t?"modified":"new file")+"</i></div>"}).join("")||'<div class="empty">Staging empty</div>';
+if(!S.git)$("b2").innerHTML='<div class="empty">.git folder illa</div>';else{var h='<div><span class="pill cur">HEAD → '+esc(S.cur)+"</span>"+Object.keys(S.br).filter(function(b){return b!==S.cur}).map(function(b){return'<span class="pill">'+esc(b)+"</span>"}).join("")+"</div>";
+var l=S.br[S.cur];h+=l.length?l.slice().reverse().map(function(i){return'<div class="chip c'+(S.cm[i].by==="mate"?" mate":"")+'"><span>'+i.slice(0,7)+" "+esc(S.cm[i].msg)+"</span></div>"}).join(""):'<div class="empty">Innum commit illa</div>';$("b2").innerHTML=h}
+var r=S.remote;$("b3").innerHTML=r.url?'<div class="pill">origin: github.com/USERNAME/my-project</div>'+(r.main.length?r.main.slice().reverse().map(function(i){return'<div class="chip r'+(S.cm[i].by==="mate"?" mate":"")+'"><span>'+i.slice(0,7)+" "+esc(S.cm[i].msg)+"</span></div>"}).join(""):'<div class="empty">GitHub empty, push pannu</div>'):'<div class="empty">Remote connect aagala</div>';lock()}
+$("cmds").innerHTML=CM.map(function(c,i){return(i&&CM[i-1][0]===c[0]?"":"<h2>"+c[0]+"</h2>")+'<button class="cmd" data-id="'+c[1]+'"><b>'+esc(c[2])+"</b><small>"+esc(c[3])+"</small></button>"}).join("");
+$("cmds").onclick=function(e){var b=e.target.closest(".cmd");if(b)run(b.dataset.id)};
+$("nf").onclick=function(){var n=["app.js","readme.md","about.html"].filter(function(x){return!fil(x)})[0];if(!n){explain({s:"Mela irukkura 3 extra files ah add aagiduchu.",e:1});return}S.files.push({n:n,t:0,wd:"new",st:0});render();explain({s:"<code>"+n+"</code> pudhu file Working Directory la vandhuchu. Git ku idhu innum <b>untracked</b>. <code>git add</code> pannaa dhaan Git paakkum."})};
+$("ef").onclick=function(){var f=S.files.filter(function(f){return f.t&&!f.gone&&f.wd==="clean"})[0];if(!f){explain({s:"Edit panna oru committed file venum. Munnadi <code>git add .</code> and <code>git commit</code> pannu.",e:1});return}f.wd="mod";render();explain({s:"<code>"+f.n+"</code> ah edit pannitteenga. Ippo status <b>modified</b> (orange). Git ku theriyum, aana innum staging la illa. <code>git add</code> pannanum."})};
+$("tm").onclick=function(){if(!S.remote.url){explain({s:"Munnadi <code>git remote add origin</code> and <code>git push</code> pannu, apparam teammate push panna mudiyum.",e:1});return}var id=nid();S.cm[id]={msg:"Teammate update",by:"mate"};S.remote.main.push(id);render();explain({s:"Teammate oru commit GitHub ku push pannitaar (orange). Adhu un laptop la illa. Un laptop la <code>git pull origin main</code> pannaa vandhurum. Pull pannaama push pannaa reject aagum."})};
+$("rs").onclick=function(){if(!busy)init()};
+init();
+</script>
+</body>
+</html>
